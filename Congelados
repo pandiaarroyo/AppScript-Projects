@@ -1,0 +1,100 @@
+function onEdit(e) {
+  const hoja = e.source.getActiveSheet();
+  const hojaNombre = hoja.getName();
+  
+  const hojasObjetivo = ["PRE-ENFRIADOS"];
+  const palette = [
+    "#FFB3BA", "#FFDFBA", "#FFFFBA", "#BAFFC9", "#BAE1FF",
+    "#E3BAFF", "#FFC9DE", "#C9FFFC", "#F0D9FF", "#FFF2B2",
+    "#C2F0C2", "#D0F0FD", "#FEE1E8", "#E6F5D0", "#D9E4FF"
+  ];
+  
+  const ss = e.source;
+
+  if (hojasObjetivo.includes(hojaNombre)) {
+    const ultimaFila = hoja.getLastRow();
+    if (ultimaFila >= 2) {
+      const rangoClientes = hoja.getRange("C2:C" + ultimaFila);
+      const valoresClientes = rangoClientes.getValues().flat();
+
+      const coloresClientes = {};
+      let colorIndex = 0;
+
+      for (let i = 0; i < valoresClientes.length; i++) {
+        const cliente = valoresClientes[i];
+        if (!cliente || cliente.toString().trim().toUpperCase() === "CLIENTE") continue;
+
+        if (!coloresClientes[cliente]) {
+          coloresClientes[cliente] = palette[colorIndex % palette.length];
+          colorIndex++;
+        }
+      }
+
+      // Pintar clientes en todas las hojas objetivo (incluyendo PRE-ENFRIADOS)
+      for (let i = 0; i < valoresClientes.length; i++) {
+        const cliente = valoresClientes[i];
+        if (!cliente || cliente.toString().trim().toUpperCase() === "CLIENTE") continue;
+
+        const celdaCliente = rangoClientes.getCell(i + 1, 1);
+
+        // Solo pintar cliente si NO es PRE-ENFRIADOS o si fila no está en verde
+        if (hojaNombre !== "PRE-ENFRIADOS") {
+          celdaCliente.setBackground(coloresClientes[cliente]);
+        }
+      }
+    }
+  }
+
+  // PINTAR FILAS DE PRE-ENFRIADOS
+  if (hojaNombre === "PRE-ENFRIADOS") {
+    const rangoFilas = hoja.getRange("A2:J" + hoja.getLastRow());
+    const datos = rangoFilas.getValues();
+    const fondos = rangoFilas.getBackgrounds();
+
+    for (let i = 0; i < datos.length; i++) {
+      const valorI = datos[i][8]; // Columna I
+      const valorJ = datos[i][9]; // Columna J
+
+      if (valorI !== "" && valorJ !== "") {
+        // Si cumple, pintar toda la fila A:J de verde
+        for (let j = 0; j < 10; j++) {
+          fondos[i][j] = "#d9ead3"; // Verde claro
+        }
+      } else {
+        // Si no cumple, restaurar blanco (excepto columna C que ya tiene su color de cliente)
+        for (let j = 0; j < 10; j++) {
+          if (j === 2) continue; // Saltar columna C
+          fondos[i][j] = "#ffffff"; // Fondo blanco
+        }
+      }
+    }
+
+    rangoFilas.setBackgrounds(fondos);
+
+    // Ahora repintamos columna C con colores de cliente si la fila NO está verde
+    const rangoClientes = hoja.getRange("C2:C" + hoja.getLastRow());
+    const valoresClientes = rangoClientes.getValues().flat();
+
+    const coloresClientes = {};
+    let colorIndex = 0;
+    for (let i = 0; i < valoresClientes.length; i++) {
+      const cliente = valoresClientes[i];
+      if (!cliente || cliente.toString().trim().toUpperCase() === "CLIENTE") continue;
+      if (!coloresClientes[cliente]) {
+        coloresClientes[cliente] = palette[colorIndex % palette.length];
+        colorIndex++;
+      }
+    }
+
+    for (let i = 0; i < datos.length; i++) {
+      const valorI = datos[i][8];
+      const valorJ = datos[i][9];
+      if (!(valorI !== "" && valorJ !== "")) { // Solo si NO es fila verde
+        const cliente = valoresClientes[i];
+        if (cliente && coloresClientes[cliente]) {
+          hoja.getRange(i + 2, 3).setBackground(coloresClientes[cliente]); // C columna es columna 3
+        }
+      }
+    }
+  }
+}

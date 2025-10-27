@@ -1,0 +1,43 @@
+function pintarClientes() {
+  const hojasObjetivo = ["CIELO", "CLAUDIA", "PRE-ENFRIADOS", "LUIS", "ANGIE","JHANINA", "FRANK", "DIEGO", "APOYO MEJÍA", "PAITA", "PAITA2", "CARLONCHO", "DANY", "GUILLERMO", "CIELO / GUILLERMO", "JHANINA / CLAUDIA", "DANY / FRANK", "CIELO / JHANINA", "GUILLERMO / CLAUDIA", "NELITA / CLAUDIA", "GUILLERMO / JHANINA", "ANTONIO", "CLAUDIA / JHANINA", "NELITA / GUILLERMO", "SERVICIOS PROPIOS", "SERVICIOS NEW"];
+  const palette = [
+    "#FFB3BA", "#FFDFBA", "#FFFFBA", "#BAFFC9", "#BAE1FF",
+    "#E3BAFF", "#FFC9DE", "#C9FFFC", "#F0D9FF", "#FFF2B2",
+    "#C2F0C2", "#D0F0FD", "#FEE1E8", "#E6F5D0", "#D9E4FF",
+    "#FFD8BE", "#FFE2F0", "#D7F9F1", "#FFF6D1", "#FAD4FF",
+    "#D1ECFF", "#E2FFD9", "#FFF0E1", "#F9D6C1", "#E0D6FF",
+    "#FAD9C1", "#D3F8E2", "#E4C1F9", "#F6F6D1", "#FFCBD2",
+    "#CDF7F6", "#FFEDD5", "#E2F0CB", "#D0D1FF", "#FFD3B6",
+    "#C1E1C1", "#FFDEE9", "#E8F6EF", "#FFE0AC", "#D3D4FF",
+    "#FBE4FF", "#FFDAC1", "#DAF5DC", "#E0F7FA", "#FFF1D0"
+  ];
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  for (let hojaNombre of hojasObjetivo) {
+    const hoja = ss.getSheetByName(hojaNombre);
+    if (!hoja) continue;
+
+    const ultimaFila = hoja.getLastRow();
+    if (ultimaFila < 2) continue;
+
+    const rango = hoja.getRange("C2:C" + ultimaFila);
+    const valores = rango.getValues().flat();
+
+    const colores = {};
+    let colorIndex = 0;
+
+    for (let i = 0; i < valores.length; i++) {
+      const cliente = valores[i];
+      if (!cliente || cliente.toString().trim().toUpperCase() === "CLIENTE") continue;
+
+      if (!colores[cliente]) {
+        colores[cliente] = palette[colorIndex % palette.length];
+        colorIndex++;
+      }
+      rango.getCell(i + 1, 1).setBackground(colores[cliente]);
+    }
+  }
+}
+
+

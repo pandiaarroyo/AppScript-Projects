@@ -1,0 +1,21 @@
+function limpiarColorClientes() {
+  const hojasObjetivo = ["CIELO", "CLAUDIA", "PRE-ENFRIADOS", "LUIS", "ANGIE", "JHANINA", "FRANK", "DIEGO", "APOYO MEJÍA", "PAITA", "PAITA NOCHE", "CARLONCHO", "CIELO / GUILLERMO", "JHANINA / CLAUDIA"];
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  for (let hojaNombre of hojasObjetivo) {
+    const hoja = ss.getSheetByName(hojaNombre);
+    if (!hoja) continue;
+
+    const ultimaFila = hoja.getLastRow();
+    if (ultimaFila < 2) continue;
+
+    const rango = hoja.getRange("C2:C" + ultimaFila);
+    const valores = rango.getValues();
+
+    for (let i = 0; i < valores.length; i++) {
+      const valor = valores[i][0];
+      if (valor && valor.toString().trim().toUpperCase() === "CLIENTE") continue;
+      rango.getCell(i + 1, 1).setBackground("white");
+    }
+  }
+}
